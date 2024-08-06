@@ -1,5 +1,5 @@
 # taking bits out of pacariodems to get the building blocks of the code.
-EXECUTABLES=imdac3 imdmc3
+EXECUTABLES=imdac3 imdm3
 
 CC=gcc
 CFLAGS=-g -Wall
@@ -12,7 +12,7 @@ PANGLIBS2=-lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lharfbuzz -lm -
 imdac3: imdac3.c
 	${CC} ${CFLAGS} ${PANGINCS} -o $@ $^ ${PANGLIBS2} -lexif
 # the manual version .. cc1.py has to be run first.
-imdmc3: imdmc3.c
+imdm3: imdm3.c
 	${CC} ${CFLAGS} ${PANGINCS} -o $@ $^ ${PANGLIBS2} -lexif
 
 .PHONY: clean

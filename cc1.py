@@ -11,6 +11,14 @@ if argquan != 2:
     print("This script requires one argument: a JPEG image filename")
     sys.exit(2)
 
+# somewhat incredibly for me, img is a string and now becomes a variable:
+img = cv2.imread(sys.argv[1])
+# we now use the .shape() method to get widht and height of input image
+# print(f"Input jpg width={img.shape[0]} height={img.shape[1]}\n")
+# imgrot = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+if img.shape[0] > img.shape[1]:
+    img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
 # Mouse callback function
 global click_list
 positions, click_list = [], []
@@ -20,9 +28,6 @@ def callback(event, x, y, flags, param):
 
 cv2.namedWindow('img')
 cv2.setMouseCallback('img', callback)
-
-# somewhat incredibly for me, img is a string and now becomes a variable:
-img = cv2.imread(sys.argv[1])
 
 # Mainloop - show the image and collect the data
 while True:

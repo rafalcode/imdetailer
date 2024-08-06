@@ -1,5 +1,5 @@
-/* imdac3: IMage Detailer Auto (Centre - 3 subimages, Top left. top right, bottom strip
- * An extra or two is included */
+/* imdm3: IMage Detailer Manual (Needs conft focus point file - 3 subimages, Top left. top right, bottom strip)
+ * Takes from imdac3.c */
 #include<math.h>
 #include<stdlib.h>
 #include<stdio.h>
@@ -339,7 +339,6 @@ int main (int argc, char *argv[])
     }
 
     exif_data_unref(ed);
-    //
 
     // OK let's take a look at input file
 	struct stat ifsta;
@@ -371,17 +370,17 @@ int main (int argc, char *argv[])
 
     // our surf0, this will be used as a source.
     cairo_surface_t *surf0 = cairo_image_surface_create_from_jpeg(ijpg);
-    int w = cairo_image_surface_get_width (surf0);
-    int h = cairo_image_surface_get_height (surf0);
-    printf("orig input image - w=%i,h=%i\n", w, h); 
-    if(h>w)
-        printf("Height of input is bigger than width, perhaps portrait is a better optin than landscape.\n");
+    int iw = cairo_image_surface_get_width (surf0); // input jpg width
+    int ih = cairo_image_surface_get_height (surf0); // input jpg height
+    printf("orig input image - w=%i,h=%i\n", iw, ih); 
+    if(ih>iw)
+        printf("Warning: Height of input is bigger than width, perhaps portrait is a better option than landscape.\n");
     // printf("- Can take a clip of %2.2f%% of original width and %2.2f%% of original height\n", 100.*hpdfw/(float)w, 100.*hpdfh/(float)h);
 
     printf("Amount of times true image width exceeds IRF*pdfwidth:\n"); 
-    float wrfac= hpdfw/(float)w; // width reduce factor, for landscape, this is the "deciding one".
+    float wrfac= hpdfw/(float)iw; // width reduce factor, for landscape, this is the "deciding one".
     printf("wrfac=%2.2f\n", wrfac);
-    float hsh= h*wrfac; // height shrink. We need not do this for width, because it has to hpdfw, as we've set that way.
+    float hsh= ih*wrfac; // height shrink. We need not do this for width, because it has to hpdfw, as we've set that way.
     printf("Reduced input image - w=%2.2f,h=%2.2f\n", hpdfw, hsh); 
 
     char *tstr=calloc(4*THROWAWAYMEMSZ, sizeof(char));
@@ -447,27 +446,46 @@ int main (int argc, char *argv[])
     // now using the r2 for the lower strip
     // Middle point
     float mpoi[2] = {atof(la->l[0]), atof(la->l[1])};
-    printf("Mid point of input:%2.2f,%2.2f\n", mpoi[0], mpoi[1]);
+    printf(".conft-file focus point:%2.2f,%2.2f\n", mpoi[0], mpoi[1]);
     
     // the c lip rectangle.
     // lower strip
     rpla_t *r2=calloc(1, sizeof(rpla_t)); // so everything starts with zero.
     // but ... take care if point is to too close to sides.
     // the pint should remain the centre of the strip/focus piece.
-    float tooleft= mpoi[0] - WPDF/2.;
-    float tooright= WPDF - mpoi[0] - WPDF/2.;
+    float tooleft= mpoi[0] - WPDF/2.; // minus WPDF/2 pushes to the left, if it goes over, then we know we are "too left"
+    float tooright= iw - (mpoi[0] + WPDF/2.); // here we add (push) the right, and test to see if it goes over WPDF.
     if(tooleft<0) { // too left
         r2->w=mpoi[0]*2;
         r2->x=-tooleft;
+        printf("tooleft is neg: %2.2f\n", tooleft); 
     } else if(tooright<0) { // too left
-        r2->w=(WPDF-mpoi[0])*2;
+        r2->w=WPDF+tooright*2; // tooright is negative anyway.
         r2->x=-tooright;
+        printf("tooright is neg: %2.2f\n", tooright); 
+    } else {
+        r2->w=WPDF;
+        //  setting r2->x is not nec due to calloc
     }
-    r2->y=hsh;
-    r2->h=HPDF-hsh;
+    // now same for up an down. needs separate if()
+    float toohigh= mpoi[1] - (HPDF-hsh)/2.;
+    printf("nduge over: %2.2f\n", mpoi[1] + (HPDF-hpdfh)/2.);
+    float toolow= ih - (mpoi[1] + (HPDF-hpdfh)/2.);
+    printf("HPDF %2.2f hsh %2.2f\n", HPDF, hsh);
+    if(toohigh<0) { // too left
+        r2->h=mpoi[1]*2;
+        r2->y=hsh-toohigh;
+        printf("toohigh is neg: %2.2f\n", toohigh); 
+    } else if(toolow<0) { // too left
+        r2->h=(HPDF-hsh)+toolow*2;
+        r2->y=hsh-toolow;
+        printf("toolow is neg: %2.2f\n", toolow); 
+    } else {
+        r2->y=hsh;
+        r2->h=HPDF-hsh;
+    }
 
-
-    printf("cairo_rect x=%2.2f, y=%2.2f, w=%2.2f, h=%2.2f\n", r2->x, r2->y, r2->w, r2->h);
+    printf("cairo_rect r2: x=%2.2f, y=%2.2f, w=%2.2f, h=%2.2f\n", r2->x, r2->y, r2->w, r2->h);
     cairo_rectangle(cr, r2->x, r2->y, r2->w, r2->h);
    // cairo_set_source_rgb(cr, 1., 0, .5);
    // cairo_fill(cr);
