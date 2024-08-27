@@ -18,6 +18,9 @@ Digital photos are everywhere now, people take very very many of them.
 Sometimes they have details that can be singled out, but these are often missed.
 So this repo is an effort to make the most of past digital photos.
 
+# Beware the Jabberwocky
+aka. cairo_clip() followed by set_source, a negative positioning is noninuitively required. You can spend many hours working out why it doesn't work!
+
 # use cases
 Photographs of coastlines from aeroplanes. It's very hard to identify where you are
 from the general picture. If you are able to focus on a detail, the issue
@@ -34,6 +37,14 @@ exif date and
 
 But on which detail should be 
 
+# manual part: imclicker.py
+The manual part is about clicking on an image and having the click positions recorded. Thi sis done
+via python's cv2 module. You need to have this installed on in your virtualenv. It will
+output the clieck positions into a text file with same base name as the image
+but with the "conft" extension added. Note: x and y values are put on separate lines!
+So, for two points you have four lines!
+
+
 # EXIF Orientation
 Rather than a field, this seems to be an instruction, and operates on the natural orientation of the image.
 It may be imposed by the camera, depending on the type of camera. Especially OpenCV (cv2) imshow
@@ -45,3 +56,8 @@ display which is on the bottom left. Neverthless, the click position goes well i
 TODO
 - need to clean up cod
 - produce a text based log file as it will be tedious going through all the _imd.jpg files.
+
+# too tired to write annotations?
+iWell forget the text! In other words, it a picture tells a thousands words, why don't you use
+a subimage to do annotation. I'm already dong submimages BTW, so this is a cop-out
+in a way, but it does make sense. Cue inset0.c
